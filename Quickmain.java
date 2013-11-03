@@ -5,12 +5,10 @@ public class Quickmain {
 		int[] unsorted = {9,8,7,6,5,4,3,2,1};
 		boolean bool;
 		Quicksort q = new Quicksort();
-		printArr(unsorted);
-		System.out.println(q.isSorted(unsorted));
-		Quicksort.sQsort(unsorted);
-		System.out.println(q.isSorted(unsorted));
-	       
-		printArr(unsorted);
+		int[] foo = randomArray(4);
+		printArr(foo);
+		q.sQsort(foo);
+		printArr(foo);
 	}
 	
 	
@@ -24,6 +22,12 @@ public class Quickmain {
 		string += "]";
 		System.out.println(string);
 	}
-    public static void printArr(
+
+    public static int[] randomArray(int n) {
+	int arr[] = new int[n];
+	for (int i = 0; i < n; ++i) {
+	    arr[i] = (int) (Math.random()*10);
+	}
+	return arr;
+    }
 }
-asdasdasdasd
