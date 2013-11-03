@@ -24,4 +24,6 @@ public class Quickmain {
 		string += "]";
 		System.out.println(string);
 	}
+    public static void printArr(
 }
+asdasdasdasd
