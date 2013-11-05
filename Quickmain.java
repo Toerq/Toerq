@@ -1,18 +1,18 @@
-public class Quickmain {
+import java.lang.Thread;
+import java.util.ArrayList;
+import java.util.List;
 
-	public static void main(String args[]) {
-		int[] sorted = {0,1,2,3,4,5,6,7,8,9};
-		int[] unsorted = {9,8,7,6,5,4,3,2,1};
-		boolean bool;
+public class Quickmain {
+	static int qq;
+
+	public static void main(String args[]) throws InterruptedException {
+		
 		Quicksort q = new Quicksort();
-		int[] foo = randomArray(4);
-		printArr(foo);
-		q.sQsort(foo);
-		printArr(foo);
+		int[] qq = randomArray(3);
+		q.pQsort(qq);
+		System.out.println(q.isSorted(qq));
 	}
-	
-	
-	
+
 	
 	public static void printArr(int[] a) {
 		String string = "[" + a[0];
@@ -23,11 +23,17 @@ public class Quickmain {
 		System.out.println(string);
 	}
 
-    public static int[] randomArray(int n) {
-	int arr[] = new int[n];
-	for (int i = 0; i < n; ++i) {
-	    arr[i] = (int) (Math.random()*10);
+	public static int[] randomArray(int n) {
+		int arr[] = new int[n];
+		for (int i = 0; i < n; ++i) {
+			arr[i] = (int) (Math.random() * 10);
+		}
+		return arr;
 	}
-	return arr;
-    }
+
+	public static void add(int[] n) {
+		for (int element : n) {
+			qq += element;
+		}
+	}
 }
