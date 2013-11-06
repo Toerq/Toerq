@@ -11,31 +11,27 @@ import java.awt.geom.Point2D.Double;
 
 public class MyPongModel implements PongModel {
 
-	final private int windowX = 820;
+	final private int windowX = 800;
 	final private int windowY = 800;
 	final Dimension dimension = new Dimension(windowX, windowY);
 	final int halfWindowWidth = windowX / 2;
 	final int halfWindowHeight = windowY / 2;
 	private double gameSpeedRate;
 	private boolean currentcomputeIsANewGame = true;
+	private boolean gameWasPaused = false;
 
 	// messageToWindow will be set to 0 if no one has currently won a game.
 	// 1 if LEFT has currently won a game and 2 if RIGHT has won a game.
 	private int messageToWindow = 0;
-
 	private int leftBarPos = halfWindowWidth;
 	private int rightBarPos = halfWindowHeight;
 
-	private int leftBarHeight = 200;
-	private int rightBarHeight = 200;
-	final int initalLeftBarHeight = leftBarHeight;
-	final int initalRightBarHeight = rightBarHeight;
 
-	//Change these values to alter into a different but relevant game play experience.
-	private int barMovementSpeed = 30; // 30 = standard
-	private int barShrinkRate = 20; // 30 = standard
-	double ballSpeedIncreaseAfterBarBounce = 1.0; // 2.0 = standard
-	private int scoreToWinAGame = 10; // 10 = standard
+	// These values will be a range [intervalStart, intervalEnd] where a
+	// number x will be RNG'd will be generated in this range.
+	// x will be the start size of the horizontal direction vector for the ball.
+	private int intervalStart = 16;
+	private int intervalEnd = 20;
 
 	private int scoreLEFT = 0;
 	private int scoreRIGHT = 0;
@@ -45,8 +41,33 @@ public class MyPongModel implements PongModel {
 	private Point2D ball = new Point2D.Double(halfWindowWidth, halfWindowHeight);
 	private Point2D direction = new Point2D.Double(0, 0);
 
-	String nameLEFT = "";
-	String nameRIGHT = "";
+	private String nameLEFT = "";
+	private String nameRIGHT = "";
+	
+	/*---------------------------------------------------------------*/
+	// Change these values to alter into a different but still relevant game play experience
+	final int initalLeftBarHeight = 200; // 200 = standard
+	final int initalRightBarHeight = 200; // 200 = standard
+	private int barMovementSpeed = 30; // 30 = standard
+	private double ballSpeedAddedAfterBarBounce = 2.0; // 2.0 = standard
+	private int scoreToWinAGame = 10; // 10 = standard
+	private boolean resetBarsAfterPoint = true; // false = standard
+	
+	//Set handicap (eg. barShrinkRateLEFT > barShrinkRateRIGHT if LEFT is more skilled)
+	//You can even put a negative value to increase the bar height for each bounce.
+	private int barShrinkRateLEFT = 20; // 20 = standard
+	private int barShrinkRateRIGHT = 20; // 20 = standard
+	
+	//How close the ball need to be to a bar edge to change its angle direction.
+	private int allowedDistanceToBarEdge = 30; // 30 = standard
+	
+	// amount of seconds to wait after score.
+	private int waitAfterScore = 1; // 0 = standard
+	
+	/*---------------------------------------------------------------*/
+	
+	private int leftBarHeight = initalLeftBarHeight;
+	private int rightBarHeight = initalRightBarHeight;
 
 	public MyPongModel(String player1, String player2) {
 		this.nameLEFT = player1;
@@ -58,8 +79,6 @@ public class MyPongModel implements PongModel {
 	}
 
 	private void randomStartDirection(int server) {
-		int intervalStart = 10;
-		int intervalEnd = 11;
 		boolean trueOrFalse1 = ((int) (Math.random() * (2)) == 1);
 		boolean trueOrFalse2 = ((Math.random() * (2)) == 1);
 		double x = intervalStart + (Math.random() * (intervalEnd));
@@ -86,7 +105,7 @@ public class MyPongModel implements PongModel {
 		}
 		direction.setLocation(x * gameSpeedRate, y * gameSpeedRate);
 	}
-	
+
 	public void compute(Set<Input> input, long delta_t) {
 		gameSpeedRate = (double) delta_t * (1.0 / 33.0);
 		victor();
@@ -96,9 +115,13 @@ public class MyPongModel implements PongModel {
 		}
 		ballMover();
 		playerBarMover(input);
+		gameWasPaused = false;
 	}
 
 	private void playerBarMover(Set<Input> input) {
+		if (gameWasPaused) {
+			input.clear();
+		}
 		for (Input element : input) {
 			switch (element.key) {
 			case LEFT:
@@ -129,7 +152,7 @@ public class MyPongModel implements PongModel {
 			}
 		}
 	}
-	
+
 	private void ballMover() {
 		double dirX = direction.getX();
 		double dirY = direction.getY();
@@ -142,59 +165,71 @@ public class MyPongModel implements PongModel {
 		boolean ballMissesLEFTBar = (!ballBouncesOnLEFTBar && (ballX <= 20));
 		boolean ballMissesRIGHTBar = (!ballBouncesOnRIGHTBar && (ballX >= windowX - 20));
 		boolean ballBounceAtTopOrDown = (ball.getY() <= 8 || ball.getY() >= windowY - 8);
-	
+
 		if (ballBounceAtTopOrDown) {
 			dirY = -direction.getY();
 		}
-	
+
 		if (ballBouncesOnLEFTBar) {
 			dirY = angleModifier(leftBarPos, leftBarHeight, true);
 			if (direction.getX() < 50) {
-				dirX = -direction.getX() + (ballSpeedIncreaseAfterBarBounce * gameSpeedRate);
+				dirX = -direction.getX()
+						+ (ballSpeedAddedAfterBarBounce * gameSpeedRate);
 			} else
 				dirX = -direction.getX();
-			if (leftBarHeight > 40)
-				leftBarHeight -= barShrinkRate;
-	
+			if (leftBarHeight > 40 && leftBarHeight < 400)
+				leftBarHeight -= barShrinkRateLEFT;
+
 		} else if (ballBouncesOnRIGHTBar) {
 			dirY = angleModifier(rightBarPos, rightBarHeight, false);
 			if (direction.getX() < 50) {
-				dirX = -direction.getX() - (ballSpeedIncreaseAfterBarBounce * gameSpeedRate);
+				dirX = -direction.getX()
+						- (ballSpeedAddedAfterBarBounce * gameSpeedRate);
 			} else
 				dirX = -direction.getX();
-			if (rightBarHeight > 40)
-				rightBarHeight -= barShrinkRate;
+			if (rightBarHeight > 40 && rightBarHeight < 400)
+				rightBarHeight -= barShrinkRateRIGHT;
 		}
 		if (ballMissesLEFTBar) {
 			randomStartDirection(1);
 			ball.setLocation(halfWindowWidth, halfWindowHeight);
 			scoreRIGHT++;
 			leftBarHeight = initalLeftBarHeight;
-	
+			if (resetBarsAfterPoint) {
+				leftBarPos = halfWindowHeight;
+				rightBarPos = halfWindowHeight;
+			}
+			if (waitAfterScore != 0 && scoreRIGHT != scoreToWinAGame) {
+				pause(waitAfterScore);
+			}
 		} else if (ballMissesRIGHTBar) {
 			randomStartDirection(2);
 			ball.setLocation(halfWindowWidth, halfWindowHeight);
 			scoreLEFT++;
 			rightBarHeight = initalRightBarHeight;
-		}
-	
-		else {
+			if (resetBarsAfterPoint) {
+				leftBarPos = halfWindowHeight;
+				rightBarPos = halfWindowHeight;
+			}
+			if (waitAfterScore != 0 && scoreLEFT != scoreToWinAGame) {
+				pause(waitAfterScore);
+			}
+		} else {
 			direction.setLocation(dirX, dirY);
 		}
-	
+
 		ballX = ball.getX() + direction.getX();
 		ballY = ball.getY() + direction.getY();
-	
+
 		ball.setLocation(ballX, ballY);
 	}
 
 	private double angleModifier(int barPos, int barHeight, boolean barIsLEFT) {
 		int distanceToBarEdge = -1;
-		int allowedDistanceToBarEdge = 30;
 		double x = direction.getX();
 		double y = direction.getY();
 		boolean ballAboveCenterOfBar = false;
-	
+
 		if (ball.getY() > barPos) {
 			distanceToBarEdge = (barPos + barHeight / 2) - (int) ball.getY();
 		} else if (ball.getY() < barPos) {
@@ -218,11 +253,7 @@ public class MyPongModel implements PongModel {
 
 	private void victor() {
 		if (messageToWindow != 0) {
-			try {
-				TimeUnit.SECONDS.sleep(3);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+			pause(3);
 			leftBarPos = halfWindowHeight;
 			rightBarPos = halfWindowHeight;
 		}
@@ -238,6 +269,7 @@ public class MyPongModel implements PongModel {
 			reset();
 		}
 	}
+	
 
 	private void reset() {
 		leftBarHeight = initalLeftBarHeight;
@@ -245,6 +277,16 @@ public class MyPongModel implements PongModel {
 		scoreLEFT = 0;
 		scoreRIGHT = 0;
 		currentcomputeIsANewGame = true;
+	}
+	
+
+	private void pause(int pauseTime) {
+		gameWasPaused = true;
+		try {
+			TimeUnit.SECONDS.sleep(pauseTime);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public int getBarPos(BarKey k) {
