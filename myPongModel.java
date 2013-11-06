@@ -48,7 +48,7 @@ public class MyPongModel implements PongModel {
 	
 	private int barMovementSpeed = 30; // 30 = standard
 	private double ballSpeedAddedAfterBarBounce = 1.0; // 1.0 = standard
-	private int scoreToWinAGame = 10; // 10 = standard
+	private int scoreToWinAGame = 1; // 10 = standard
 	private boolean resetBarsAfterPoint = true; // false = standard
 	
 	//Set handicap (eg. barShrinkRateLEFT > barShrinkRateRIGHT if LEFT is more skilled)
@@ -80,30 +80,30 @@ public class MyPongModel implements PongModel {
 	}
 
 	private void randomStartDirection(int server) {
-		boolean trueOrFalse1 = ((int) (Math.random() * (2)) == 1);
-		boolean trueOrFalse2 = ((Math.random() * (2)) == 1);
+		boolean bool1 = ((int) (Math.random() * (2)) == 1);
+		boolean bool2 = ((int) (Math.random() * (2)) == 1);
+		
+		double val1 = (Math.random() * (2) - 1);
+		
 		double x = intervalStart + (Math.random() * (intervalEnd));
-		double y = (int) (Math.random() * (2));
+		double y = 0;
 
 		switch (server) {
 		case (0):
-			System.out.println("0");
-			if (trueOrFalse1) {
+			if (bool1) {
 				x = -x;
 			}
 			break;
 		case (1):
-			System.out.println("1");
 			x = Math.abs(x);
 			break;
 		case (2):
-			System.out.println("2");
 			x = -Math.abs(x);
 			break;
 		}
-		if (trueOrFalse2) {
-			y = -y;
-		}
+			y = val1;
+			System.out.println(y);
+
 		direction.setLocation(x * gameSpeedRate, y * gameSpeedRate);
 	}
 
@@ -113,6 +113,9 @@ public class MyPongModel implements PongModel {
 		if (currentcomputeIsANewGame) {
 			randomStartDirection();
 			currentcomputeIsANewGame = false;
+			if(scoreLEFT != scoreToWinAGame && scoreRIGHT != scoreToWinAGame) {
+				pause(1);
+			}
 		}
 		ballMover();
 		playerBarMover(input);
@@ -334,7 +337,7 @@ public class MyPongModel implements PongModel {
 
 			break;
 		default:
-			message = wonGamesLEFT + " : " + wonGamesRIGHT;
+			message = null; //wonGamesLEFT + " : " + wonGamesRIGHT;
 		}
 		return message;
 	}
