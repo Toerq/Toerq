@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.awt.geom.Point2D;
-import java.awt.geom.Point2D.Double;
+
 
 public class MyPongModel implements PongModel {
 
@@ -25,7 +25,6 @@ public class MyPongModel implements PongModel {
 	private int messageToWindow = 0;
 	private int leftBarPos = halfWindowWidth;
 	private int rightBarPos = halfWindowHeight;
-
 
 	// These values will be a range [intervalStart, intervalEnd] where a
 	// number x will be RNG'd will be generated in this range.
@@ -46,22 +45,24 @@ public class MyPongModel implements PongModel {
 	
 	/*---------------------------------------------------------------*/
 	// Change these values to alter into a different but still relevant game play experience
-	final int initalLeftBarHeight = 200; // 200 = standard
-	final int initalRightBarHeight = 200; // 200 = standard
+	
 	private int barMovementSpeed = 30; // 30 = standard
-	private double ballSpeedAddedAfterBarBounce = 2.0; // 2.0 = standard
+	private double ballSpeedAddedAfterBarBounce = 1.0; // 1.0 = standard
 	private int scoreToWinAGame = 10; // 10 = standard
 	private boolean resetBarsAfterPoint = true; // false = standard
 	
 	//Set handicap (eg. barShrinkRateLEFT > barShrinkRateRIGHT if LEFT is more skilled)
 	//You can even put a negative value to increase the bar height for each bounce.
-	private int barShrinkRateLEFT = 20; // 20 = standard
-	private int barShrinkRateRIGHT = 20; // 20 = standard
+	//Also set the initial size of the two bars.
+	private int barShrinkRateLEFT = 5; // 20 = standard
+	private int barShrinkRateRIGHT = 5; // 20 = standard
+	final int initalLeftBarHeight = 200; // 200 = standard
+	final int initalRightBarHeight = 200; // 200 = standard
 	
 	//How close the ball need to be to a bar edge to change its angle direction.
 	private int allowedDistanceToBarEdge = 30; // 30 = standard
 	
-	// amount of seconds to wait after score.
+	// amount of seconds to wait after each score.
 	private int waitAfterScore = 1; // 0 = standard
 	
 	/*---------------------------------------------------------------*/
@@ -240,7 +241,7 @@ public class MyPongModel implements PongModel {
 				&& distanceToBarEdge < allowedDistanceToBarEdge) {
 			double percentage = distanceToBarEdge
 					* (100 / allowedDistanceToBarEdge) / 100.0;
-			y = (double) (x - (x * percentage));// fpsUpdateRatio));
+			y += (double) (x - (x * percentage));
 			if (ballAboveCenterOfBar) {
 				y = -y;
 			}
