@@ -48,7 +48,7 @@ public class MyPongModel implements PongModel {
 	
 	private int barMovementSpeed = 30; // 30 = standard
 	private double ballSpeedAddedAfterBarBounce = 1.0; // 1.0 = standard
-	private int scoreToWinAGame = 1; // 10 = standard
+	private int scoreToWinAGame = 10; // 10 = standard
 	private boolean resetBarsAfterPoint = true; // false = standard
 	
 	//Set handicap (eg. barShrinkRateLEFT > barShrinkRateRIGHT if LEFT is more skilled)
@@ -102,9 +102,10 @@ public class MyPongModel implements PongModel {
 			break;
 		}
 			y = val1;
-			System.out.println(y);
-
 		direction.setLocation(x * gameSpeedRate, y * gameSpeedRate);
+
+
+		
 	}
 
 	public void compute(Set<Input> input, long delta_t) {
